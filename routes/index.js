@@ -10,7 +10,7 @@ let clientsDB = [];
 let clients = [{}];
 let sessions = [];
 
-app.listen(80);
+app.listen(8080);
 
 io.on('connection', function (socket) 
 {

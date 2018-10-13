@@ -13,3 +13,13 @@ margin:auto;
 a {
   color: #00B7FF;
 }
+
+.name.hidden {
+  max-height: 0;
+  visibility: hidden;
+}
+
+.preGame.hidden {
+  max-height: 0;
+  visibility: hidden;
+}

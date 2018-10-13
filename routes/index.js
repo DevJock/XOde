@@ -7,8 +7,9 @@ var ip = require("ip");
 
 
 let clientsDB = [];
-let clients = [{}];
+let clients = [];
 let sessions = [];
+let t = [-1,-1,-1,-1,-1,-1,-1,-1,-1];
 
 
 app.listen(5000);
@@ -18,44 +19,20 @@ io.set('origins', '*:*');
 
 io.on('connection', function (socket) 
 {
-  // we send a hello to the connected client
   var clientIp = socket.request.connection.remoteAddress;
   console.log('New connection request from ' + clientIp +':'+socket.request.connection.remotePort);	
-  socket.emit('hello', { message:"Hello From Server",clientID: clients.length, ip:ip.address(),clientip:clientIp});
-  socket.on('helloBack', function (client) 
+  socket.on('connectToServer', function (client) 
   {
-    clientsDB.push({socket:socket,id:client.id,ip:client.ip,name:client.name});
-    clients.push({id:client.id,ip:client.ip,name:client.name});
-    console.log("Client# "+client.id+" Connected Successfully with IP: "+client.ip);
+    clientsDB.push({socket:socket,id:clients.length,ip:clientIp,name:client.name});
+    clients.push({id:clients.length,ip:clientIp,name:client.name});
+    socket.emit('connected', { message:"Connected to Game Server",clientid: clients.length, ip:ip.address(),clientip:clientIp,clients:clients});
+    console.log("Client# "+clients.length+" Connected Successfully with IP: "+clientIp);
   });
 
-
-  socket.on('connectToGame', function(data){
-    let p1 = data.player1;
-    let p2 = data.player2;
-    p1["team"] = "x";
-    p2["team"] = "o";
-    let session = {id:sessions.length,player1:p1,player2:p2,t:[],x:0,o:0,xTurn:true,oTurn:false,move:-1}
-    sessions.push(session);
-    socket.emit('connected',{message:"Connection Successful",session:session,code:200});
-  });
-
-  socket.on('sync', function(client,session){
-    console.log("Player "+client.name+" made move");
-    
-    if(session.xTurn == true)
-    {
-      session.xTurn = false;
-      session.oTurn = true;
-      session.t[session.move] = 0;
-    }
-    else
-    {
-      session.xTurn = true;
-      session.oTurn = false;
-      session.t[session.move] = 1;
-    }
-    socket.emit("sync",{session:session});
+  socket.on('startGame', function(client){
+    sessions.push({id:sessions.length,p1:client.client,p2:client.opponent,xscore:0,oscore:0,turn:client.client.id,grid:t});
+    socket.emit('play', {session:sessions[sessions.length - 1]});
+    console.log("Starting Game with "+client.client.id+" and "+client.opponent.id);
   });
 
   socket.on('disconnect', function() {

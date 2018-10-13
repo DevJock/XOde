@@ -4,8 +4,8 @@ let serverData = {};
 
 let session = {};
 
-let Width = window.innerWidth;
-let Height = window.innerHeight;
+let Width = document.documentElement.clientWidth;
+let Height = document.documentElement.clientHeight;
 
 let gridSize = 100;
 let lineThickness = 5;
@@ -28,45 +28,38 @@ let oScore;
 let t = [];
 
 let me;
-
 var gameCanvas;
+var NAME;
 
-socket.on('hello', function (server) 
+function CONNECT()
 {
-  serverData = {ip:server.ip};
-  clientData = {id:server.clientID,name:"Someone",ip:server.clientip};
-  socket.emit('helloBack',{id:clientData.id, message:"Hello from Client",ip:clientData.ip,name:"Someone"})
-});
-
-socket.on('connected', function(response){
-  console.log(response.message);
-  if(response.code == 200)
-  {
-	  gameCanvas.show();
-  }
-  session = response.session;
-  t = session.t;
-  turn = session.turn;
-  xScore = session.xScore;
-  oScore = session.oScore;
-});
-
-socket.on('sync', function(session){
-	session = session;
-	t = session.t;
-	turn = session.turn;
-	xScore = session.xScore;
-	oScore = session.oScore;
-});
-
-function CONNECT(p1,p2)
-{
-	socket.emit('connectToGame',{player1:p1,player2:p2});
+	socket.emit('connectToServer',{id:-1, name:NAME});
 }
+
+socket.on('connected', function(server){
+	serverData = {ip:server.ip};
+	clientData = {id:server.clientid,ip:server.clientip};
+  	console.log(server.message);
+});
+
+socket.on('play',function(server){
+	t = server.session.grid;
+	xScore = server.session.xscore;
+	oScore = server.session.oscore;
+	turn = server.session.turn;
+	gameCanvas.show();
+});
+
+function PLAY(opponent)
+{
+	socket.emit('startGame',{client:clientData,opponent:opponent});
+}
+
 
 
 function setup() {
 	gameCanvas = createCanvas(Width, Height);
+	gameCanvas.parent(canvasHolder);
 	gameCanvas.hide();
 	textAlign(CENTER, CENTER);
 	ellipseMode(CENTER);
@@ -74,6 +67,16 @@ function setup() {
 	angleMode(DEGREES);
 	frameRate(60);
 }
+
+function windowResized() {
+	const css = getComputedStyle(canvas.parentElement),
+		  marginWidth  = round( float(css.marginLeft) + float(css.marginRight)  ),
+		  marginHeight = round( float(css.marginTop)  + float(css.marginBottom) );
+   
+	resizeCanvas(windowWidth - marginWidth, windowHeight - marginHeight, true);
+	Width = canvas.width;
+	Height = canvas.Height;
+  }
 
 function draw() {
 	background(0);
@@ -90,10 +93,9 @@ function mouseClicked()
 	{
 		return;
 	}
-	if(session.xTurn == me)
+	if(turn)
 	{
-		session.move = pos.val - 1;
-		socket.emit('sync',session);
+		socket.emit('sync',{client:clientData,move:pos.val - 1});
 	}
 }
 

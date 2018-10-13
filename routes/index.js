@@ -10,7 +10,11 @@ let clientsDB = [];
 let clients = [{}];
 let sessions = [];
 
-app.listen(8080);
+
+app.listen(5000);
+
+io.set('origins', '*:*');
+
 
 io.on('connection', function (socket) 
 {
@@ -73,7 +77,7 @@ router.post('/clients', function(req,res) {
   let ip = req.body.ip;
   let discoverDB = [];
   clients.forEach(obj => {
-    if(obj.ip != ip)
+  //  if(obj.ip != ip)
     {
       discoverDB.push(obj);
     }

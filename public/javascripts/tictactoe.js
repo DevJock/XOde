@@ -1,4 +1,4 @@
-let socket = io.connect('http://localhost');
+let socket = io.connect('http://127.0.0.1:5000');
 let clientData = {};
 let serverData = {};
 

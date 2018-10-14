@@ -23,13 +23,14 @@ io.on('connection', function (socket) {
   socket.on('connectToServer', function (client) {
     clientsDB.push({ socket: socket, id: clientsDB.length, ip: clientIp, name: client.name });
     clientsDB.forEach(obj => {
-      //if (obj.ip != client.clientip) 
+      if (obj.ip != clientIp) 
       {
         clients.push({ id: obj.id, ip: obj.ip, name: obj.name});
       }
     });
     socket.emit('connected', { message: "Connected to Game Server", clientid: clientsDB.length - 1, ip: ip.address(), clientip: clientIp, clients: clients });
     console.log("Client# " + clients.length - 1 + " Connected Successfully with IP: " + clientIp);
+    console.log(clients);
   });
 
   socket.on('startGame', function (client) {
@@ -44,7 +45,6 @@ io.on('connection', function (socket) {
         console.log("Client# " + obj.id + " with IP: " + obj.ip + " Got disconnected ");
         let i = clientsDB.indexOf(obj);
         clientsDB.splice(i, 1);
-        clients.splice(i, 1);
       }
     });
   });

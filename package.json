@@ -1,23 +1,16 @@
 {
   "name": "xode",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "Server Based TicTacToe Application",
+  "main": "index.js",
   "scripts": {
-    "start": "node ./bin/www"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "author": "Chiraag Bangera",
+  "license": "MIT",
   "dependencies": {
-    "@uirouter/angularjs": "^1.0.20",
-    "angularjs": "0.0.1",
-    "body-parser": "~1.18.2",
-    "cookie-parser": "~1.4.3",
-    "cors": "^2.8.4",
-    "debug": "~2.6.9",
     "express": "^4.16.4",
     "ip": "^1.1.5",
-    "jade": "~1.11.0",
-    "morgan": "~1.9.0",
-    "serve-favicon": "~2.4.5",
-    "socket.io": "^2.1.1",
-    "socket.io-client": "^2.1.1"
+    "socket.io": "^2.1.1"
   }
 }

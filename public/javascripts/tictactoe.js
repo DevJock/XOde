@@ -50,6 +50,7 @@ socket.on('connected', function(server){
 	clientData = {id:server.clientid,ip:server.clientip};
 	CLIENTS = server.clients;
 	angular.element(document.getElementById("view")).scope().displayClients();
+	angular.element(document.getElementById("view")).scope().$apply();
 });
 
 socket.on('play',function(server){

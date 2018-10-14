@@ -16,8 +16,10 @@ a {
 
 .name.hidden {
   max-height: 0;
+  visibility: hidden;
 }
 
 .pregame.hidden {
   max-height: 0;
+  visibility: hidden;
 }

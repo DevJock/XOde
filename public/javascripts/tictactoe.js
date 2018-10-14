@@ -31,15 +31,25 @@ let me;
 var gameCanvas;
 var NAME;
 
+var CLIENTS = [];
+
+let connected = false;
+
 function CONNECT()
 {
+	if(connected)
+	{
+		return;
+	}
 	socket.emit('connectToServer',{id:-1, name:NAME});
 }
 
 socket.on('connected', function(server){
+	connected = true;
 	serverData = {ip:server.ip};
 	clientData = {id:server.clientid,ip:server.clientip};
-  	console.log(server.message);
+	CLIENTS = server.clients;
+	angular.element(document.getElementById("view")).scope().displayClients();
 });
 
 socket.on('play',function(server){

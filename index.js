@@ -7,7 +7,7 @@ const ip = require('ip');
 
 app.use(express.static('public'))
 
-let PORT = 80;
+let PORT = 3000;
 
 let clients = [];
 let sessions = [];

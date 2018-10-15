@@ -1,6 +1,8 @@
 angular
     .module("XOde", ["ui.router", "ngResource"])
     .controller("XOdeSessionController", function ($scope) {
+        $scope.gameOver = true;
+        $scope.gameView = true;
         $scope.nameUpdate = function () {
             NAME = $scope.name;
             $scope.done = true;
@@ -17,6 +19,23 @@ angular
             }
         };
 
+
+        $scope.updateUI = function(){
+            $scope.xscore = xScore;
+            $scope.oscore = oScore;
+            $scope.turn = turn == clientData.id ? "Your Turn" : "Opponent's";
+            $scope.turn += " Turn to play";
+        }
+
+        $scope.displayScore = function(){
+            $scope.xscore = xScore;
+            $scope.oscore = oScore;
+            $scope.gomessage = xScore > oScore ? "X" : "O";
+            $scope.gomessage += " Wins the Game!!";
+            $scope.gameOver = false;
+            $scope.gameView = true;
+        }
+
         $scope.connect = function (id) {
             let opponent = {};
             CLIENTS.forEach(client => {
@@ -26,6 +45,7 @@ angular
             });
             $scope.playing = true;
             PLAY(opponent);
+            $scope.gameView = false;
         };
 
     });

@@ -23,3 +23,13 @@ a {
   max-height: 0;
   visibility: hidden;
 }
+
+.postgame.hidden {
+  max-height: 0;
+  visibility: hidden;
+}
+
+.game.hidden {
+  max-height: 0;
+  visibility: hidden;
+}

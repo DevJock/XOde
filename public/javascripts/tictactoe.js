@@ -7,18 +7,23 @@ let session = {};
 let Width = document.documentElement.clientWidth;
 let Height = document.documentElement.clientHeight;
 
-let gridSize = 100;
-let lineThickness = 5;
+var baseSize = {
+    w: 16,
+    h: 9    
+}
 
+let gridSize;
+let lineThickness;
+let scale;
 
-let xStart = Width/2 - gridSize*3;
-let xEnd = Width/2 + gridSize*3;
-let yStart = Height/2 - gridSize*3;
-let yEnd = Height/2 + gridSize*3;
-let x1 = Width/2 - gridSize;
-let x2 = Width/2 + gridSize;
-let y1 = Height/2 - gridSize;
-let y2 = Height/2 + gridSize;
+let xStart;
+let xEnd;
+let yStart;
+let yEnd;
+let x1;
+let x2;
+let y1;
+let y2;
 
 
 let turn;
@@ -34,6 +39,12 @@ var NAME;
 var CLIENTS = [];
 
 let connected = false;
+let sessionID;
+let symbol;
+let opponentSymbol;
+let opponentID;
+
+let fSize;
 
 function CONNECT()
 {
@@ -47,8 +58,23 @@ function CONNECT()
 socket.on('connected', function(server){
 	connected = true;
 	serverData = {ip:server.ip};
-	clientData = {id:server.clientid,ip:server.clientip};
+	clientData = {id:server.clientid,ip:server.clientip, name:server.name};
 	CLIENTS = server.clients;
+	angular.element(document.getElementById("view")).scope().displayClients();
+	angular.element(document.getElementById("view")).scope().$apply();
+});
+
+socket.on('clientAdded', function(server){
+	console.log("Client Added");
+	CLIENTS.push(server.client);
+	angular.element(document.getElementById("view")).scope().displayClients();
+	angular.element(document.getElementById("view")).scope().$apply();
+});
+
+socket.on('clientRemoved', function(server){
+	console.log("Client Removed");
+	let index = CLIENTS.indexOf(server.client);
+	CLIENTS.splice(index, 1);
 	angular.element(document.getElementById("view")).scope().displayClients();
 	angular.element(document.getElementById("view")).scope().$apply();
 });
@@ -58,7 +84,40 @@ socket.on('play',function(server){
 	xScore = server.session.xscore;
 	oScore = server.session.oscore;
 	turn = server.session.turn;
+	sessionID = server.session.id;
+	if(server.session.x == clientData.id)
+	{
+		symbol = "X";
+		opponentSymbol = "O";
+		opponentID = server.session.o;
+	}
+	else
+	{
+		opponentID = server.session.x;
+		symbol = "O";
+		opponentSymbol = "X";
+	}
 	gameCanvas.show();
+});
+
+
+socket.on('syncClient', function(server){
+	console.log("Syncing");
+	t = server.session.grid;
+	xScore = server.session.xscore;
+	oScore = server.session.oscore;
+	turn = server.session.turn;
+	angular.element(document.getElementById("view")).scope().updateUI();
+	angular.element(document.getElementById("view")).scope().$apply();
+});
+
+socket.on('end',function(server){
+	console.log("GameOver");
+	xScore = server.xscore;
+	oScore = server.oscore;
+	gameCanvas.hide();
+	angular.element(document.getElementById("view")).scope().displayScore();
+	angular.element(document.getElementById("view")).scope().$apply();
 });
 
 function PLAY(opponent)
@@ -68,26 +127,36 @@ function PLAY(opponent)
 
 
 
+
+
 function setup() {
 	gameCanvas = createCanvas(Width, Height);
 	gameCanvas.parent(canvasHolder);
 	gameCanvas.hide();
+	rescale();
 	textAlign(CENTER, CENTER);
 	ellipseMode(CENTER);
 	rectMode(CENTER);
 	angleMode(DEGREES);
-	frameRate(60);
+	frameRate(5);
 }
 
-function windowResized() {
-	const css = getComputedStyle(canvas.parentElement),
-		  marginWidth  = round( float(css.marginLeft) + float(css.marginRight)  ),
-		  marginHeight = round( float(css.marginTop)  + float(css.marginBottom) );
-   
-	resizeCanvas(windowWidth - marginWidth, windowHeight - marginHeight, true);
-	Width = canvas.width;
-	Height = canvas.Height;
-  }
+function rescale()
+{
+	scale = Width/baseSize.w;
+	gridSize = scale;
+	lineThickness = scale/6;
+	fSize = scale + 40;
+	xStart = Width/2 - gridSize*3;
+	xEnd = Width/2 + gridSize*3;
+	yStart = Height/2 - gridSize*3;
+	yEnd = Height/2 + gridSize*3;
+	x1 = Width/2 - gridSize;
+	x2 = Width/2 + gridSize;
+	y1 = Height/2 - gridSize;
+	y2 = Height/2 + gridSize;
+}
+
 
 function draw() {
 	background(0);
@@ -104,16 +173,17 @@ function mouseClicked()
 	{
 		return;
 	}
-	if(turn)
+	if(turn == clientData.id)
 	{
-		socket.emit('sync',{client:clientData,move:pos.val - 1});
+		socket.emit('sync',{id:sessionID, client:clientData,move:pos.val - 1});
+		placePiece2(symbol,pos.x,pos.y);
 	}
 }
 
 function placePiece2(sym,x,y)
 {
 	fill(255);
-	textSize(200);
+	textSize(fSize);
 	text(sym,x,y);
 }
 
@@ -121,14 +191,14 @@ function placePiece(sym,ind)
 {
 	let data = processIndex(ind);
 	fill(255);
-	textSize(120);
+	textSize(fSize);
 	text(sym,data.x,data.y);
 }
 
 function drawFrame()
 {
 	fill(255);
-	strokeWeight(5);
+	strokeWeight(lineThickness);
 	stroke(255);
 	line(x1,yStart,x1,yEnd);
 	line(x2,yStart,x2,yEnd);
@@ -137,13 +207,13 @@ function drawFrame()
 
 	for(let i=0;i<t.length;i++)
 	{
-		if(t[i] == 0)
+		if(t[i] == clientData.id)
 		{
-			placePiece("X",i);
+			placePiece(symbol,i);
 		}
-		else if(t[i] == 1)
+		else if(t[i] == opponentID)
 		{
-			placePiece("O",i);
+			placePiece(opponentSymbol,i);
 		}
 	}
 }

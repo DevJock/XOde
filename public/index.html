@@ -43,6 +43,23 @@
 
 		<div id="view" ng-app="XOde" ng-controller="XOdeSessionController">
 			<div class="container-fluid">
+				<div class="container-fluid game fixed-top" style="margin-top: 4%;" ng-class="{ 'hidden': gameView }">
+
+					<h4 class="display-6" style="float:left; text-align: left;">X:{{xscore}}</h4>&nbsp;
+					<h4 class="display-6" style="float:right; text-align: right;">O:{{oscore}}</h4>&nbsp;
+					<h3 style="text-align:center">{{turn}}</h3>
+					
+				</div>
+				<div class="postgame text-center" ng-class="{ 'hidden': gameOver }">
+					<p>
+						<h3>Player Disconnected. Thanks for Playing.</h3>
+					</p>
+					<h1 class="display-6">SocreBoard</h1>
+					<h1 class="display-6">X:{{xscore}} | O:{{oscore}}</h1>
+					<h4>
+						<p>{{gomessage}}</p>
+					</h4>
+				</div>
 				<div class="pregame" ng-class="{ 'hidden': playing }">
 					<div class="name" ng-class="{ 'hidden': done }">
 						<p>
@@ -70,10 +87,7 @@
 				</div>
 			</div>
 		</div>
-
-
 	</div>
-
 </body>
 
 </html>

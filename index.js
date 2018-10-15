@@ -31,25 +31,21 @@ io.on('connection', function (socket) {
 
   // Connect request from client
   socket.on('connectToServer', function (client) {
-    let CLIENT = { id: clients.length, ip: clientIp, name: client.name, socket: socket };
+    let CLIENT = { id: clients.length, ip: clientIp, name: client.name, socket: socket }; 
+    clients.push(CLIENT);
     let discoverable = [];
-    // Creating a clients database without the connecting client 
+    // Creating a clients database
     clients.forEach(obj => {
       discoverable.push({ id: obj.id, ip: obj.ip, name: obj.name });
     });
 
     // Sending handshake confirmation with necessary details
     socket.emit('connected', { message: "Connected to Game Server", clientid: CLIENT.id, ip: ip.address(), clientip: CLIENT.ip, name: CLIENT.name });
-    socket.emit('update', { clients: discoverable, players: playing });
-
-    // Adding new Client details for updating connected clients databases 
-    discoverable.push({ id: CLIENT.id, ip: CLIENT.ip, name: CLIENT.name });
 
     // Sending updates to all cients but connecting client
     clients.forEach(obj => {
       obj.socket.emit('update', { clients: discoverable, players: playing });
     });
-    clients.push(CLIENT);
     console.log("Client# " + CLIENT.id + " Connected Successfully with IP: " + CLIENT.ip);
   });
 
@@ -63,19 +59,22 @@ io.on('connection', function (socket) {
       if (clients[i].ip === data.client.ip) {
         p1 = clients.splice(i, 1)[0];
       }
-
+      
       if (clients[i].ip === data.opponent.ip) {
         p2 = clients.splice(i, 1)[0];
       }
     }
+    // messy but need it, for now
+    if(!p1){
+      p1 = clients.splice(0,1)[0];
+    }
     players.push(p1);
     players.push(p2);
-
     // we create a new session object with the required data 
     let session = { id: sessions.length, p1: p1, p2: p2, xscore: 0, oscore: 0, turn: p1.id, grid: [-1, -1, -1, -1, -1, -1, -1, -1, -1], x: p1.id, o: p2.id };
 
     // client copy of the server session that we will be sending to both players
-    let syncData = { id: session.id, turn: session.turn, xscore: session.xscore, oscore: session.oscore, grid: session.grid, x: session.p1.id, o: session.p2.id };
+    let syncData = { id: session.id, turn: session.turn, xscore: session.xscore, oscore: session.oscore, grid: session.grid, x: session.x, o: session.o };
 
     // we add a duplicate copy of the active players
     playing.push({ p1: { id: p1.id, ip: p1.ip, name: p1.name }, p2: { id: p2.id, ip: p2.ip, name: p2.name }, id: session.id });
@@ -118,11 +117,29 @@ io.on('connection', function (socket) {
       session.turn = session.p1.id;
     }
     session.grid[moveData.move] = moveData.client.id;
-    let syncData = { id: session.id, grid: session.grid, turn: session.turn, xscore: session.xscore, oscore: session.oscore };
+    let winner = winCheck(session.grid,-1);
+    let winID = winner.winner;
+    if(winner.winner != -1){
+      if(winner.winner == session.p1.id){
+        session.xscore ++;
+      }
+      else{
+        session.oscore ++;
+      }
+      console.log("Session#: "+session.id+" Player with Client ID: "+winID+" Won");
+      let syncData = { id: session.id, grid: session.grid, turn: session.turn, xscore: session.xscore, oscore: session.oscore };
+      session.p1.socket.emit('replay', {session: syncData});
+      session.p2.socket.emit('replay', {session: syncData});
+      session.p1.socket.emit('syncClient', { session: syncData });
+      session.p2.socket.emit('syncClient', { session: syncData });
+    }
+    else{
+      let syncData = { id: session.id, grid: session.grid, turn: session.turn, xscore: session.xscore, oscore: session.oscore };
+      session.p1.socket.emit('syncClient', { session: syncData });
+      session.p2.socket.emit('syncClient', { session: syncData });
+      console.log(moveData.client.name + " placed at " + moveData.move);
+    }
     sessions.push(session);
-    session.p1.socket.emit('syncClient', { session: syncData });
-    session.p2.socket.emit('syncClient', { session: syncData });
-    console.log(moveData.client.name + " placed at " + moveData.move);
   });
 
   // Logic to handle client disconnects
@@ -187,3 +204,48 @@ io.on('connection', function (socket) {
     });
   });
 });
+
+
+function winCheck(data,empty)
+{
+	if(data[0] === data[1] && data[0] === data[2] && data[0] != empty) 
+	{
+		return {pos:[0,1,2],winner:data[0]};
+	}
+
+	else if(data[3] === data[4] && data[3] === data[5] && data[3] != empty)
+	{
+    return {pos:[3,4,5],winner:data[3]};
+	}
+	
+	else if(data[6] === data[7] && data[6] === data[8] && data[6] != empty)
+	{
+    return {pos:[6,7,8],winner:data[6]};
+	}
+	else if(data[0] === data[3] && data[0] === data[6] && data[0] != empty)
+	{
+    return {pos:[0,3,6],winner:data[0]};
+	}
+
+	else if(data[1] === data[4] && data[1] === data[7] && data[1] != empty)
+	{
+    return {pos:[1,4,7],winner:data[1]};
+	}
+
+	else if(data[2] == data[5] && data[2] == data[8] && data[2] != empty)
+	{
+    return {pos:[2,5,8],winner:data[2]};
+	}
+
+	else if(data[0] == data[4] && data[0] == data[8] && data[0] != empty)
+	{
+    return {pos:[0,4,8],winner:data[0]};
+	}
+
+	else if(data[2] == data[4] && data[2] == data[6] && data[2] != empty)
+	{
+    return {pos:[2,4,6],winner:data[2]};
+	}
+	return {winner:-1,pos:null};
+}
+

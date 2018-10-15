@@ -85,6 +85,11 @@ socket.on('syncClient', function(server){
 	angular.element(document.getElementById("view")).scope().$apply();
 });
 
+socket.on('replay', function(server){
+    console.log("Resetting");
+});
+
+
 socket.on('end',function(server){
 	console.log("GameOver");
 	xScore = server.xscore;

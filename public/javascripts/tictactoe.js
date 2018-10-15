@@ -1,8 +1,3 @@
-let socket = io.connect();
-let clientData = {};
-let serverData = {};
-
-let session = {};
 
 let Width = document.documentElement.clientWidth;
 let Height = document.documentElement.clientHeight;
@@ -25,107 +20,7 @@ let x2;
 let y1;
 let y2;
 
-
-let turn;
-let xScore;
-let oScore;
-
-let t = [];
-
-let me;
-var gameCanvas;
-var NAME;
-
-var CLIENTS = [];
-
-let connected = false;
-let sessionID;
-let symbol;
-let opponentSymbol;
-let opponentID;
-
 let fSize;
-
-function CONNECT()
-{
-	if(connected)
-	{
-		return;
-	}
-	socket.emit('connectToServer',{id:-1, name:NAME});
-}
-
-socket.on('connected', function(server){
-	connected = true;
-	serverData = {ip:server.ip};
-	clientData = {id:server.clientid,ip:server.clientip, name:server.name};
-	CLIENTS = server.clients;
-	angular.element(document.getElementById("view")).scope().displayClients();
-	angular.element(document.getElementById("view")).scope().$apply();
-});
-
-socket.on('clientAdded', function(server){
-	console.log("Client Added");
-	CLIENTS.push(server.client);
-	angular.element(document.getElementById("view")).scope().displayClients();
-	angular.element(document.getElementById("view")).scope().$apply();
-});
-
-socket.on('clientRemoved', function(server){
-	console.log("Client Removed");
-	let index = CLIENTS.indexOf(server.client);
-	CLIENTS.splice(index, 1);
-	angular.element(document.getElementById("view")).scope().displayClients();
-	angular.element(document.getElementById("view")).scope().$apply();
-});
-
-socket.on('play',function(server){
-	t = server.session.grid;
-	xScore = server.session.xscore;
-	oScore = server.session.oscore;
-	turn = server.session.turn;
-	sessionID = server.session.id;
-	if(server.session.x == clientData.id)
-	{
-		symbol = "X";
-		opponentSymbol = "O";
-		opponentID = server.session.o;
-	}
-	else
-	{
-		opponentID = server.session.x;
-		symbol = "O";
-		opponentSymbol = "X";
-	}
-	gameCanvas.show();
-});
-
-
-socket.on('syncClient', function(server){
-	console.log("Syncing");
-	t = server.session.grid;
-	xScore = server.session.xscore;
-	oScore = server.session.oscore;
-	turn = server.session.turn;
-	angular.element(document.getElementById("view")).scope().updateUI();
-	angular.element(document.getElementById("view")).scope().$apply();
-});
-
-socket.on('end',function(server){
-	console.log("GameOver");
-	xScore = server.xscore;
-	oScore = server.oscore;
-	gameCanvas.hide();
-	angular.element(document.getElementById("view")).scope().displayScore();
-	angular.element(document.getElementById("view")).scope().$apply();
-});
-
-function PLAY(opponent)
-{
-	socket.emit('startGame',{client:clientData,opponent:opponent});
-}
-
-
 
 
 

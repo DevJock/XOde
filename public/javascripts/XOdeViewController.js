@@ -9,22 +9,28 @@ angular
             CONNECT();
         }
 
-        $scope.displayClients = function(){
-            $scope.clients = CLIENTS;
-            if (CLIENTS.length == 0) {
-                $scope.message = "Looks like you are the first one Here =)";
-            }
-            else {
-                $scope.message = "Active Players";
-            }
-        };
-
-
         $scope.updateUI = function(){
             $scope.xscore = xScore;
             $scope.oscore = oScore;
             $scope.turn = turn == clientData.id ? "Your Turn" : "Opponent's";
             $scope.turn += " Turn to play";
+        }
+
+        $scope.update = function(){
+            $scope.clients = CLIENTS;
+            $scope.players = PLAYERS;
+            if (CLIENTS.length == 0) {
+                $scope.message = "Looks like you are the first one Here =). Invite a person to start playing.";
+            }
+            else {
+                $scope.message = "Looking for Players";
+            }
+            if(PLAYERS.length > 0){
+                $scope.playersMessage = "Currently Active Players";
+            }
+            else{
+                $scope.playersMessage = "";
+            }
         }
 
         $scope.displayScore = function(){

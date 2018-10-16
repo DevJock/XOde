@@ -1,27 +1,26 @@
 angular
     .module("XOde", ['ui.router'])
-    .config(function($stateProvider, $urlRouterProvider)
-	{
-		$stateProvider
-			.state('name', {
+    .config(function ($stateProvider, $urlRouterProvider) {
+        $stateProvider
+            .state('name', {
                 name: 'name',
-                controller:'XOdeSessionController',
+                controller: 'XOdeSessionController',
                 templateUrl: "./templates/name.html"
             })
             .state('discover', {
-				name: 'discover',
-				templateUrl: "./templates/discover.html"
+                name: 'discover',
+                templateUrl: "./templates/discover.html"
             })
             .state('game', {
                 name: 'game',
-				templateUrl: "./templates/game.html"
+                templateUrl: "./templates/game.html"
             })
             .state('gameover', {
-				name: 'gameover',
-				templateUrl: "./templates/gameover.html"
+                name: 'gameover',
+                templateUrl: "./templates/gameover.html"
             });
     })
-    .controller("XOdeSessionController", function ($scope,$state) {
+    .controller("XOdeSessionController", function ($scope, $state) {
         $state.go('name');
         $scope.nameUpdate = function () {
             NAME = $scope.name;
@@ -57,7 +56,7 @@ angular
             $state.go('gameover');
             $scope.xscore = xScore;
             $scope.oscore = oScore;
-            if(xScore === 0 && oScore == 0){
+            if (xScore === 0 && oScore == 0) {
                 $scope.gomessage += "";
                 return;
             }
@@ -65,12 +64,12 @@ angular
             $scope.gomessage += " Wins the Game!!";
         }
 
-        $scope.reboot = function(){
+        $scope.reboot = function () {
             REFRESH();
             $state.go('discover');
         }
 
-        $scope.game = function(){
+        $scope.game = function () {
             $state.go('game');
         }
 
@@ -83,5 +82,4 @@ angular
             });
             PLAY(opponent);
         };
-
     });

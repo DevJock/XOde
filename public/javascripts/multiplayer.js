@@ -19,13 +19,6 @@ var NAME;
 let scope;
 
 
-function CONNECT() {
-	if (connected) {
-		return;
-	}
-	socket.emit('connectToServer', { id: -1, name: NAME });
-}
-
 socket.on('connected', function (server) {
 	connected = true;
 	serverData = { ip: server.ip };
@@ -92,6 +85,15 @@ socket.on('end', function (server) {
 	scope.displayScore();
 	scope.$apply();
 });
+
+
+
+function CONNECT() {
+	if (connected) {
+		return;
+	}
+	socket.emit('connectToServer', { id: -1, name: NAME });
+}
 
 function PLAY(opponent) {
 	opponentData = opponent;

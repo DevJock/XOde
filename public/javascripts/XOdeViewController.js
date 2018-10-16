@@ -1,6 +1,6 @@
 angular
     .module("XOde", ['ui.router'])
-    .config(function($stateProvider)
+    .config(function($stateProvider, $urlRouterProvider)
 	{
 		$stateProvider
 			.state('name', {
@@ -10,17 +10,14 @@ angular
             })
             .state('discover', {
 				name: 'discover',
-                controller:'XOdeSessionController',
 				templateUrl: "./templates/discover.html"
             })
             .state('game', {
-				name: 'game',
-                controller:'XOdeSessionController',
+                name: 'game',
 				templateUrl: "./templates/game.html"
             })
             .state('gameover', {
 				name: 'gameover',
-                controller:'XOdeSessionController',
 				templateUrl: "./templates/gameover.html"
             });
     })

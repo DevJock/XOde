@@ -4,19 +4,23 @@ angular
 	{
 		$stateProvider
 			.state('name', {
-				name: 'name',
+                name: 'name',
+                controller:'XOdeSessionController',
                 templateUrl: "./templates/name.html"
             })
             .state('discover', {
 				name: 'discover',
+                controller:'XOdeSessionController',
 				templateUrl: "./templates/discover.html"
             })
             .state('game', {
 				name: 'game',
+                controller:'XOdeSessionController',
 				templateUrl: "./templates/game.html"
             })
             .state('gameover', {
 				name: 'gameover',
+                controller:'XOdeSessionController',
 				templateUrl: "./templates/gameover.html"
             });
     })

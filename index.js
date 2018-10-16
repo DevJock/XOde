@@ -7,7 +7,7 @@ const ip = require('ip');
 
 app.use(express.static('public'))
 
-let PORT = process.env.PORT || 80;
+let PORT = process.env.PORT || 8080;
 
 let clients = [];
 let players = [];
@@ -27,11 +27,9 @@ io.on('connection', function (socket) {
   // Socket opened 
   //console.log('New connection request from ' + clientIp + ':' + socket.request.connection.remotePort);
 
-
-
   // Connect request from client
   socket.on('connectToServer', function (client) {
-    let CLIENT = { id: clients.length, ip: clientIp, name: client.name, socket: socket }; 
+    let CLIENT = { id: clients.length, ip: clientIp, name: client.name, socket: socket };
     clients.push(CLIENT);
     let discoverable = [];
     // Creating a clients database
@@ -59,14 +57,14 @@ io.on('connection', function (socket) {
       if (clients[i].ip === data.client.ip) {
         p1 = clients.splice(i, 1)[0];
       }
-      
+
       if (clients[i].ip === data.opponent.ip) {
         p2 = clients.splice(i, 1)[0];
       }
     }
     // messy but need it, for now
-    if(!p1){
-      p1 = clients.splice(0,1)[0];
+    if (!p1) {
+      p1 = clients.splice(0, 1)[0];
     }
     players.push(p1);
     players.push(p2);
@@ -103,43 +101,75 @@ io.on('connection', function (socket) {
   socket.on('sync', function (moveData) {
     console.log("Server Syncing for session#: " + moveData.id);
     let session;
+    // First we find the game session where our client is playing
     for (let i = 0; i < sessions.length; i++) {
       if (sessions[i].id === moveData.id) {
         session = sessions.splice(i, 1)[0];
         break;
       }
     }
-
+    // we check who played and then assign the next turn
     if (moveData.client.id === session.p1.id) {
       session.turn = session.p2.id;
     }
     else {
       session.turn = session.p1.id;
     }
+    // we synchronize the grid data from the client
     session.grid[moveData.move] = moveData.client.id;
-    let winner = winCheck(session.grid,-1);
+    // we check for a winner
+    let winner = winCheck(session.grid, -1);
     let winID = winner.winner;
-    if(winner.winner != -1){
-      if(winner.winner == session.p1.id){
-        session.xscore ++;
+    // if there is a winner we increment the score for them and then reset the game
+    if (winID != -1) {
+      if (winID == session.p1.id) {
+        session.xscore++;
       }
-      else{
-        session.oscore ++;
+      else {
+        session.oscore++;
       }
-      console.log("Session#: "+session.id+" Player with Client ID: "+winID+" Won");
-      let syncData = { id: session.id, grid: session.grid, turn: session.turn, xscore: session.xscore, oscore: session.oscore };
-      session.p1.socket.emit('replay', {session: syncData});
-      session.p2.socket.emit('replay', {session: syncData});
+      console.log("Session#: " + session.id + " Player with Client ID: " + winID + " Won");
+      // we tell that the game is over and that a winner has been declared
+      session.turn = -1;
+      let syncData = { id: session.id, grid: session.grid, turn: -1, xscore: session.xscore, oscore: session.oscore };
       session.p1.socket.emit('syncClient', { session: syncData });
       session.p2.socket.emit('syncClient', { session: syncData });
     }
-    else{
+    // if there is no winner we just repackage the updated values into a new game session and send a copy to the clients and push a copy back to the master database
+    else {
       let syncData = { id: session.id, grid: session.grid, turn: session.turn, xscore: session.xscore, oscore: session.oscore };
       session.p1.socket.emit('syncClient', { session: syncData });
       session.p2.socket.emit('syncClient', { session: syncData });
       console.log(moveData.client.name + " placed at " + moveData.move);
     }
     sessions.push(session);
+  });
+
+  socket.on('updates', function(){
+    console.log("Client Requested Updates");
+    let discoverable = [];
+    clients.forEach(obj => {
+      discoverable.push({ id: obj.id, ip: obj.ip, name: obj.name });
+    });
+    socket.emit('update', {clients:discoverable, players: playing});
+  });
+
+
+  socket.on('reset', function (data) {
+    let session;
+    sessions.forEach(obj => {
+      if (obj.id === data.id) {
+        let i = sessions.indexOf(obj);
+        session = sessions.splice(i, 1)[0];
+      }
+    });
+    session.turn = session.p1.id;
+    session.grid = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+    let syncData = { id: session.id, grid: session.grid, turn: session.turn, xscore: session.xscore, oscore: session.oscore };
+    session.p1.socket.emit('syncClient', { session: syncData });
+    session.p2.socket.emit('syncClient', { session: syncData });
+    sessions.push(session);
+    console.log("Restarting Game Session#: " + session.id + " with " + session.p1.ip + " and " + session.p2.ip);
   });
 
   // Logic to handle client disconnects
@@ -169,19 +199,26 @@ io.on('connection', function (socket) {
 
     // If session details found we do the appropriate updates to the database
     if (playingObj) {
+      let session;
+      
+      // we delete the game session from our database  
+      for (let i = 0; i < sessions.length; i++) {
+        if (sessions[i].p1.ip === removedClient.ip || sessions[i].p2.ip === removedClient.ip) {
+          session = sessions.splice(i, 0);
+        }
+      }
+      // we transfer the opponent to active database and send him updates
       for (let i = 0; i < players.length; i++) {
         if (players[i].ip === playingObj.p1.ip || players[i].ip === playingObj.p2.ip) {
-          clients.push(players.splice(i, 1)[0]);
+          let client = players.splice(i, 1)[0];
+          client.socket.emit('end', { xscore: session.xscore, oscore: session.oscore });
+          clients.push(client);
+          break;
         }
       }
 
-      // we delete the game session from our database too 
-      for (let i = 0; i < sessions.length; i++) {
-        if (sessions[i].p1.ip === removedClient.ip || sessions[i].p2.ip === removedClient.ip) {
-          let session = sessions.splice(i, 0);
-          clients[clients.length - 1].socket.emit('end', { xscore: session.xscore, oscore: session.oscore });
-        }
-      }
+      
+      return;
     };
 
 
@@ -206,46 +243,37 @@ io.on('connection', function (socket) {
 });
 
 
-function winCheck(data,empty)
-{
-	if(data[0] === data[1] && data[0] === data[2] && data[0] != empty) 
-	{
-		return {pos:[0,1,2],winner:data[0]};
-	}
+function winCheck(data, empty) {
+  if (data[0] === data[1] && data[0] === data[2] && data[0] != empty) {
+    return { pos: [0, 1, 2], winner: data[0] };
+  }
 
-	else if(data[3] === data[4] && data[3] === data[5] && data[3] != empty)
-	{
-    return {pos:[3,4,5],winner:data[3]};
-	}
-	
-	else if(data[6] === data[7] && data[6] === data[8] && data[6] != empty)
-	{
-    return {pos:[6,7,8],winner:data[6]};
-	}
-	else if(data[0] === data[3] && data[0] === data[6] && data[0] != empty)
-	{
-    return {pos:[0,3,6],winner:data[0]};
-	}
+  else if (data[3] === data[4] && data[3] === data[5] && data[3] != empty) {
+    return { pos: [3, 4, 5], winner: data[3] };
+  }
 
-	else if(data[1] === data[4] && data[1] === data[7] && data[1] != empty)
-	{
-    return {pos:[1,4,7],winner:data[1]};
-	}
+  else if (data[6] === data[7] && data[6] === data[8] && data[6] != empty) {
+    return { pos: [6, 7, 8], winner: data[6] };
+  }
+  else if (data[0] === data[3] && data[0] === data[6] && data[0] != empty) {
+    return { pos: [0, 3, 6], winner: data[0] };
+  }
 
-	else if(data[2] == data[5] && data[2] == data[8] && data[2] != empty)
-	{
-    return {pos:[2,5,8],winner:data[2]};
-	}
+  else if (data[1] === data[4] && data[1] === data[7] && data[1] != empty) {
+    return { pos: [1, 4, 7], winner: data[1] };
+  }
 
-	else if(data[0] == data[4] && data[0] == data[8] && data[0] != empty)
-	{
-    return {pos:[0,4,8],winner:data[0]};
-	}
+  else if (data[2] == data[5] && data[2] == data[8] && data[2] != empty) {
+    return { pos: [2, 5, 8], winner: data[2] };
+  }
 
-	else if(data[2] == data[4] && data[2] == data[6] && data[2] != empty)
-	{
-    return {pos:[2,4,6],winner:data[2]};
-	}
-	return {winner:-1,pos:null};
+  else if (data[0] == data[4] && data[0] == data[8] && data[0] != empty) {
+    return { pos: [0, 4, 8], winner: data[0] };
+  }
+
+  else if (data[2] == data[4] && data[2] == data[6] && data[2] != empty) {
+    return { pos: [2, 4, 6], winner: data[2] };
+  }
+  return { winner: -1, pos: null };
 }
 

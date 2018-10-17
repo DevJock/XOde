@@ -1,4 +1,10 @@
-angular
+/**
+ * XOde Server Based TicTacToe Implementation
+ * © 2018 Chiraag Bangera.
+ * angularJS file that handles the MVC part of the Application
+ */
+
+ angular
     .module("XOde", ['ui.router'])
     .config(function ($stateProvider, $urlRouterProvider) {
         $stateProvider
@@ -76,10 +82,11 @@ angular
         $scope.connect = function (id) {
             let opponent = {};
             CLIENTS.forEach(client => {
-                if (client.id == id) {
+                if (client.id === id) {
                     opponent = client;
                 }
             });
+            console.log(opponent)
             PLAY(opponent);
         };
     });

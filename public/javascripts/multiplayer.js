@@ -1,3 +1,9 @@
+/**
+ * XOde Server Based TicTacToe Implementation
+ * © 2018 Chiraag Bangera.
+ * This file contains all the client side Networking code.
+ */
+
 var socket = io.connect();
 var clientData = {};
 var opponentData = {};
@@ -60,6 +66,7 @@ socket.on('play', function (server) {
 		opponentSymbol = "X";
 	}
 	scope.game();
+	scope.updateUI();
 	scope.$apply();
 });
 
@@ -70,7 +77,10 @@ socket.on('syncClient', function (server) {
 	xScore = server.session.xscore;
 	oScore = server.session.oscore;
 	turn = server.session.turn;
-	if (turn == -1) {
+	if (turn === -1) {
+		socket.emit('reset', { id: sessionID });
+	}
+	else if(turn === -2){
 		socket.emit('reset', { id: sessionID });
 	}
 	scope.updateUI();
@@ -97,7 +107,7 @@ function CONNECT() {
 
 function PLAY(opponent) {
 	opponentData = opponent;
-	socket.emit('startGame', { client: clientData, opponent: opponentData });
+	socket.emit('startGame', { client: clientData, opponent: opponent });
 }
 
 function REFRESH(){

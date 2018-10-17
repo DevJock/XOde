@@ -1,14 +1,15 @@
-<div class="container-fluid">
-    <div class="container-fluid game">
-        <h4 style="float:left; text-align: left;">X:{{xscore}}</h4>&nbsp;
-        <h4 style="float:right; text-align: right;">O:{{oscore}}</h4>&nbsp;
-        <h3 style="text-align:center">{{turn}}</h3>
-    </div>
-    <div class="container container-main">
-		<div style="margin: auto; max-height:1280px; max-width: 720px;height: 720px; width: 100%;" id="canvasHolder">
+<!--
+	XOde Server Based TicTacToe Implementation
+ 	© 2018 Chiraag Bangera.
+    This is one of the partial HTML based template file which helps with the angular MVC framework
+-->
+<div class="container-fluid game" style="padding:5%; margin:auto;">
+    <h3 style="float:left; text-align: left;">X: {{xscore}}</h3>&nbsp;
+    <h3 style="float:right; text-align: right;">O: {{oscore}}</h3>&nbsp;
+    <h3 style="float:none; text-align:center">{{turn}}</h3>
+    <div style="margin:auto; max-width: 800px;" id="canvasHolder">
             <script>
                 SETUPGAME();
             </script>
-		</div>
-	</div>
+        </div>
 </div>

@@ -1,3 +1,10 @@
+/**
+ * XOde Server Based TicTacToe Implementation
+ * © 2018 Chiraag Bangera.
+ * Main p5JS file the handles client side Game GUI 
+ */
+
+
 var baseSize = {
 	w: 720,
 	h: 1280
@@ -27,7 +34,8 @@ let aspectRatio;
 let setupDone;
 
 function SETUPGAME() {
-	gameCanvas = createCanvas(document.getElementById("canvasHolder").offsetWidth, document.getElementById("canvasHolder").offsetHeight);
+	gameCanvas = createCanvas(1,1);
+	windowResized();
 	gameCanvas.parent(canvasHolder);
 	rescale();
 	textAlign(CENTER, CENTER);
@@ -51,8 +59,8 @@ function rescale() {
 	Height = gameCanvas.height;
 	scale = 0.5;
 	gridSize = Width / 3 * scale;
-	lineThickness = 5 * scale;
-	fSize = 125 * scale;
+	lineThickness = 5 / scale;
+	fSize = 100;
 	xStart = Width / 2 - gridSize * 3;
 	xEnd = Width / 2 + gridSize * 3;
 	yStart = Height / 2 - gridSize * 3;

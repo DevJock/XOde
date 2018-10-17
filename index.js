@@ -1,3 +1,9 @@
+/**
+ * XOde Server Based TicTacToe Implementation
+ * © 2018 Chiraag Bangera.
+ * This file contains all the Server side Networking code and also contains the main server side logic for the game.
+*/
+
 const express = require('express')
 const app = express();
 const server = require('http').Server(app);
@@ -91,11 +97,20 @@ io.on('connection', function (socket) {
     // we start the session for our two active players
     session.p1.socket.emit('play', { session: syncData });
     session.p2.socket.emit('play', { session: syncData });
-
     // we store our session into our master database
     sessions.push(session);
     console.log("Starting Game Session#: " + session.id + " with " + data.client.ip + " and " + data.opponent.ip);
   });
+
+  socket.on('updates', function(){
+    console.log("Client Requested Updates");
+    let discoverable = [];
+    clients.forEach(obj => {
+      discoverable.push({ id: obj.id, ip: obj.ip, name: obj.name });
+    });
+    socket.emit('update', {clients:discoverable, players: playing});
+  });
+
 
   // here is where we sync the game with our two connected players
   socket.on('sync', function (moveData) {
@@ -121,7 +136,7 @@ io.on('connection', function (socket) {
     let winner = winCheck(session.grid, -1);
     let winID = winner.winner;
     // if there is a winner we increment the score for them and then reset the game
-    if (winID != -1) {
+    if (winID != -1 && winID != -2) {
       if (winID == session.p1.id) {
         session.xscore++;
       }
@@ -131,29 +146,20 @@ io.on('connection', function (socket) {
       console.log("Session#: " + session.id + " Player with Client ID: " + winID + " Won");
       // we tell that the game is over and that a winner has been declared
       session.turn = -1;
-      let syncData = { id: session.id, grid: session.grid, turn: -1, xscore: session.xscore, oscore: session.oscore };
-      session.p1.socket.emit('syncClient', { session: syncData });
-      session.p2.socket.emit('syncClient', { session: syncData });
     }
     // if there is no winner we just repackage the updated values into a new game session and send a copy to the clients and push a copy back to the master database
-    else {
-      let syncData = { id: session.id, grid: session.grid, turn: session.turn, xscore: session.xscore, oscore: session.oscore };
-      session.p1.socket.emit('syncClient', { session: syncData });
-      session.p2.socket.emit('syncClient', { session: syncData });
-      console.log(moveData.client.name + " placed at " + moveData.move);
+    else{
+      // Handle Ties
+      if(winID === -2) {
+        session.turn = -2;
+        console.log("Handling Tie for session#: " + moveData.id);
+      }
     }
+    let syncData = { id: session.id, grid: session.grid, turn: session.turn, xscore: session.xscore, oscore: session.oscore };
+    session.p1.socket.emit('syncClient', { session: syncData });
+    session.p2.socket.emit('syncClient', { session: syncData });
     sessions.push(session);
   });
-
-  socket.on('updates', function(){
-    console.log("Client Requested Updates");
-    let discoverable = [];
-    clients.forEach(obj => {
-      discoverable.push({ id: obj.id, ip: obj.ip, name: obj.name });
-    });
-    socket.emit('update', {clients:discoverable, players: playing});
-  });
-
 
   socket.on('reset', function (data) {
     let session;
@@ -274,6 +280,13 @@ function winCheck(data, empty) {
   else if (data[2] == data[4] && data[2] == data[6] && data[2] != empty) {
     return { pos: [2, 4, 6], winner: data[2] };
   }
-  return { winner: -1, pos: null };
+
+
+  for(let i=0;i<data.length;i++){
+    if(data[i] === empty){
+      return { winner: -1, pos: null };
+    }
+  }
+  return {winner: -2, pos:null}
 }
 

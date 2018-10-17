@@ -277,10 +277,10 @@ function socketObjForClientWithID(id, splice = false) {
     return socketObj;
 }
 
-function socketObjForSocket(socket, splice = false) {
+function socketObjForSocket(socket,splice = false) {
     let socketObj;
     sockets.forEach(obj => {
-        if (obj.clientID === socket) {
+        if (obj.socket === socket) {
             if (splice) {
                 socketObj = sockets.splice(sockets.indexOf(obj), 1)[0];
             }

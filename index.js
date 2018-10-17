@@ -30,6 +30,11 @@ let players = [];
 let sessions = [];
 
 
+let socketCount = 0;
+let clientCount = 0;
+let sessionCount = 0;
+
+
 //incomming connection from a client
 io.on('connection', function (socket) {
     var clientIp = socket.request.connection.remoteAddress;
@@ -38,14 +43,14 @@ io.on('connection', function (socket) {
 
     // Connect request from client
     socket.on('connectToServer', function (obj) {
-        let client = { id: clients.length, ip: clientIp, name: obj.name };
         // username validation
-        if (!validateNAME(client.name)) {
+        if (!validateNAME(obj.name)) {
             sendError("Username is Invalid. Try again.")
             return;
         }
+        let client = { id: clientCount++, ip: clientIp, name: obj.name };
         clients.push(client);
-        sockets.push({ id: sockets.length, socket: socket, clientID: client.id });
+        sockets.push({ id: socketCount++, socket: socket, clientID: client.id });
         // Sending handshake confirmation with necessary details
         socket.emit('connected', { message: "Connected to Game Server", clientid: client.id, ip: serverIP.address(), clientip: client.ip, name: client.name });
         // Sending updates to all cients but connecting client
@@ -76,7 +81,7 @@ io.on('connection', function (socket) {
         p1Socket = socketObjForClientWithID(p1.id).socket;
         p2Socket = socketObjForClientWithID(p2.id).socket;
         // we create a new session object with the required data 
-        let session = { id: sessions.length, p1: p1, p2: p2, xscore: 0, oscore: 0, turn: p1.id, grid: [-1, -1, -1, -1, -1, -1, -1, -1, -1], x: p1.id, o: p2.id, p1Socket: p1Socket, p2Socket: p2Socket };
+        let session = { id: sessionCount++, p1: p1, p2: p2, xscore: 0, oscore: 0, turn: p1.id, grid: [-1, -1, -1, -1, -1, -1, -1, -1, -1], x: p1.id, o: p2.id, p1Socket: p1Socket, p2Socket: p2Socket };
 
         // client copy of the server session that we will be sending to both players
         let syncData = { id: session.id, turn: session.turn, xscore: session.xscore, oscore: session.oscore, grid: session.grid, x: session.x, o: session.o };

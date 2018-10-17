@@ -40,8 +40,11 @@
             $scope.turn += " Turn to play";
         }
 
-        $scope.update = function () {
+        $scope.showDiscovery = function(){
             $state.go('discover');
+        }
+
+        $scope.update = function () {
             $scope.clients = CLIENTS;
             $scope.players = PLAYERS;
             if (CLIENTS.length == 0) {
@@ -80,13 +83,12 @@
         }
 
         $scope.connect = function (id) {
-            let opponent = {};
+            let opponent;
             CLIENTS.forEach(client => {
                 if (client.id === id) {
                     opponent = client;
                 }
             });
-            console.log(opponent)
             PLAY(opponent);
         };
     });

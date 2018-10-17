@@ -67,14 +67,14 @@ io.on('connection', function (socket) {
         let p1Socket;
         let p2Socket;
         // we need to move our two playing clients off from the available list to the playing list ie. clients array to players array
-        p1 = clientObjForID(data.client.id,true);
-        p2 = clientObjForID(data.opponent.id,true);
+        p1 = clientObjForID(data.client.id, true);
+        p2 = clientObjForID(data.opponent.id, true);
 
         players.push(p1);
         players.push(p2);
 
-        p1Socket = socketObjForClientWithID(p1.id);
-        p2Socket = socketObjForClientWithID(p2.id);
+        p1Socket = socketObjForClientWithID(p1.id).socket;
+        p2Socket = socketObjForClientWithID(p2.id).socket;
         // we create a new session object with the required data 
         let session = { id: sessions.length, p1: p1, p2: p2, xscore: 0, oscore: 0, turn: p1.id, grid: [-1, -1, -1, -1, -1, -1, -1, -1, -1], x: p1.id, o: p2.id, p1Socket: p1Socket, p2Socket: p2Socket };
 
@@ -85,8 +85,8 @@ io.on('connection', function (socket) {
         updateClients();
 
         // we start the session for our two active players
-        p1Socket.socket.emit('play', { session: syncData });
-        p2Socket.socket.emit('play', { session: syncData });
+        p1Socket.emit('play', { session: syncData });
+        p2Socket.emit('play', { session: syncData });
         // we store our session into our master database
         sessions.push(session);
         console.log("Starting Game Session#: " + session.id + " with " + session.p1.id + " and " + session.p2.id);
@@ -98,7 +98,7 @@ io.on('connection', function (socket) {
         console.log("Server Syncing for session#: " + moveData.id);
         let session;
         // First we find the game session where our client is playing
-        session = sessionObjForID(moveData.id,true);
+        session = sessionObjForID(moveData.id, true);
         // we check who played and then assign the next turn
         if (moveData.client.id === session.p1.id) {
             session.turn = session.p2.id;
@@ -145,7 +145,7 @@ io.on('connection', function (socket) {
     socket.on('reset', function (data) {
         let session;
         // we search and get the session from our master db
-        session = sessionObjForID(data.id,true);
+        session = sessionObjForID(data.id, true);
         // we reset the game for this session
         session.turn = session.p1.id;
         session.grid = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
@@ -164,21 +164,21 @@ io.on('connection', function (socket) {
         let session;
 
         // get socket details
-        disconnectedSocket = socketObjForSocket(socket,true);
+        disconnectedSocket = socketObjForSocket(socket, true);
 
         // finding out if they quit from an active session
-        removedClient = playerObjForID(disconnectedSocket.clientID,true);
+        removedClient = playerObjForID(disconnectedSocket.clientID, true);
 
         // if a player is removed find his session details
         if (removedClient) {
             console.log("Player with Client# " + removedClient.id + " with IP: " + removedClient.ip + " Got disconnected ");
-            session = sessionObjForClientWithID(removedClient.id,true);
+            session = sessionObjForClientWithID(removedClient.id, true);
         }
 
         // If session details found we do the appropriate updates to the database
         if (session) {
             // we transfer the opponent to active database and send him updates
-            let client = playerObjForID(session.p1.id || session.p2.id,true);
+            let client = playerObjForID(session.p1.id || session.p2.id, true);
             clients.push(client);
             socketObjForClientWithID(client.id).socket.emit('end', { xscore: session.xscore, oscore: session.oscore });
             updateClients();
@@ -187,7 +187,7 @@ io.on('connection', function (socket) {
 
         // we do 2 things here if a player not in a game quit we just remove him and update the other clients with new databse
         // if an active player had quit then we just need to update the clients cause we did the processing above
-        removedClient = clientObjForID(disconnectedSocket.clientID,true);
+        removedClient = clientObjForID(disconnectedSocket.clientID, true);
         console.log("Client# " + removedClient.id + " with IP: " + removedClient.ip + " disconnected from server");
         updateClients();
     });
@@ -277,7 +277,7 @@ function socketObjForClientWithID(id, splice = false) {
     return socketObj;
 }
 
-function socketObjForSocket(socket,splice = false) {
+function socketObjForSocket(socket, splice = false) {
     let socketObj;
     sockets.forEach(obj => {
         if (obj.socket === socket) {
@@ -299,4 +299,45 @@ function validateNAME(str) {
         return true;
     }
     return false;
+}
+
+function winCheck(data, empty) {
+    if (data[0] === data[1] && data[0] === data[2] && data[0] != empty) {
+        return { pos: [0, 1, 2], winner: data[0] };
+    }
+
+    else if (data[3] === data[4] && data[3] === data[5] && data[3] != empty) {
+        return { pos: [3, 4, 5], winner: data[3] };
+    }
+
+    else if (data[6] === data[7] && data[6] === data[8] && data[6] != empty) {
+        return { pos: [6, 7, 8], winner: data[6] };
+    }
+    else if (data[0] === data[3] && data[0] === data[6] && data[0] != empty) {
+        return { pos: [0, 3, 6], winner: data[0] };
+    }
+
+    else if (data[1] === data[4] && data[1] === data[7] && data[1] != empty) {
+        return { pos: [1, 4, 7], winner: data[1] };
+    }
+
+    else if (data[2] == data[5] && data[2] == data[8] && data[2] != empty) {
+        return { pos: [2, 5, 8], winner: data[2] };
+    }
+
+    else if (data[0] == data[4] && data[0] == data[8] && data[0] != empty) {
+        return { pos: [0, 4, 8], winner: data[0] };
+    }
+
+    else if (data[2] == data[4] && data[2] == data[6] && data[2] != empty) {
+        return { pos: [2, 4, 6], winner: data[2] };
+    }
+
+
+    for (let i = 0; i < data.length; i++) {
+        if (data[i] === empty) {
+            return { winner: -1, pos: null };
+        }
+    }
+    return { winner: -2, pos: null }
 }

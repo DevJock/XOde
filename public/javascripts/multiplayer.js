@@ -26,25 +26,24 @@ let scope;
 
 
 socket.on('connected', function (server) {
+	console.log(server.message);
 	connected = true;
 	serverData = { ip: server.ip };
 	clientData = { id: server.clientid, ip: server.clientip, name: server.name };
+	scope = angular.element(document.getElementById("view")).scope();
+	scope.showDiscovery();
+	scope.$apply();
 });
 
 socket.on('update', function (server) {
-	console.log("Updating Player Lists");
+	console.log(server.message);
 	CLIENTS = server.clients;
-	PLAYERS = [];
-	for (let i = 0; i < server.players.length; i++) {
-		PLAYERS.push(server.players[i].p1);
-		PLAYERS.push(server.players[i].p2);
-	}
+	PLAYERS = server.players;
 	for (let i = 0; i < CLIENTS.length; i++) {
-		if (CLIENTS[i].ip === clientData.ip) {
+		if (CLIENTS[i].id === clientData.id) {
 			CLIENTS.splice(i, 1);
 		}
 	}
-	scope = angular.element(document.getElementById("view")).scope();
 	scope.update();
 	scope.$apply();
 });

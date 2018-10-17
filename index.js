@@ -178,7 +178,7 @@ io.on('connection', function (socket) {
         // If session details found we do the appropriate updates to the database
         if (session) {
             // we transfer the opponent to active database and send him updates
-            let client = playerObjForID(session.p1.id || session.p2.id, true);
+            let client = playerObjForID(removedClient.id === session.p1.id ? session.p2.id: session.p1.id, true);
             clients.push(client);
             socketObjForClientWithID(client.id).socket.emit('end', { xscore: session.xscore, oscore: session.oscore });
             updateClients();
@@ -195,7 +195,7 @@ io.on('connection', function (socket) {
 
     function sendError(message) {
         console.log("Sending error Message");
-        socket.emit('error', { message: message });
+       // socket.emit('error', { message: message });
     }
 
 });
@@ -293,6 +293,9 @@ function socketObjForSocket(socket, splice = false) {
 
 
 function validateNAME(str) {
+    if(str == undefined){
+        return false;
+    }
     str = str.trim();
     var usernameRegex = /^[\wa-zA-Z]{3,12}$/;
     if (str.match(usernameRegex)) {

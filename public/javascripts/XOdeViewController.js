@@ -65,8 +65,8 @@
             $state.go('gameover');
             $scope.xscore = xScore;
             $scope.oscore = oScore;
-            if (xScore === 0 && oScore == 0) {
-                $scope.gomessage += "";
+            if (xScore === 0 && oScore === 0) {
+                $scope.gomessage = "";
                 return;
             }
             $scope.gomessage = xScore > oScore ? "X" : "O";

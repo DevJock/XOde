@@ -171,6 +171,9 @@ io.on('connection', function (socket) {
         // get socket details
         disconnectedSocket = socketObjForSocket(socket, true);
 
+        if(!disconnectedSocket){
+            return;
+        }
         // finding out if they quit from an active session
         removedClient = playerObjForID(disconnectedSocket.clientID, true);
 

@@ -200,10 +200,14 @@ io.on('connection', function (socket) {
         updateClients();
     });
 
+    socket.on('error',function(e){
+        console.log("Socket Error"+e);
+    })
+
 
     function sendError(message) {
         console.log("Sending error Message");
-       // socket.emit('error', { message: message });
+        socket.emit('errorOccured', { message: message });
     }
 });
 

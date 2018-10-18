@@ -29,7 +29,7 @@
     .controller("XOdeSessionController", function ($scope, $state) {
         $state.go('name');
 
-        $scope.nameUpdateError = function(){
+        $scope.nameError = function(){
             
         }
 

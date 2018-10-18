@@ -38,13 +38,9 @@ socket.on('connected', function (server) {
 	connected = true;
 	serverData = { ip: server.ip };
 	clientData = { id: server.clientid, ip: server.clientip, name: server.name };
-<<<<<<< HEAD
 	if(!scope){
 		scope = angular.element(document.getElementById("view")).scope();
 	}
-=======
-	scope = angular.element(document.getElementById("view")).scope();
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
 	scope.showDiscovery();
 	scope.$apply();
 });

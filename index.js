@@ -17,15 +17,9 @@ app.use(express.static('public'))
 io.set('origins', '*:*');
 
 console.log("Initialized Server on port: " + PORT);
-<<<<<<< HEAD
 
 server.listen(PORT);
 
-=======
-
-server.listen(PORT);
-
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
 // this array stores all socket information pk: id
 let sockets = [];
 // this array stores all the connected client information pk: id
@@ -51,11 +45,7 @@ io.on('connection', function (socket) {
     socket.on('connectToServer', function (obj) {
         // username validation
         if (!validateNAME(obj.name)) {
-<<<<<<< HEAD
             sendError("Username is Invalid. Try again.", socket)
-=======
-            sendError("Username is Invalid. Try again.")
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
             return;
         }
         let client = { id: clientCount++, ip: clientIp, name: obj.name };
@@ -106,13 +96,8 @@ io.on('connection', function (socket) {
         sessions.push(session);
         console.log("Starting Game Session#: " + session.id + " with " + session.p1.id + " and " + session.p2.id);
     });
-<<<<<<< HEAD
 
 
-=======
-
-
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
     // here is where we sync the game with our two connected players
     socket.on('sync', function (moveData) {
         console.log("Server Syncing for session#: " + moveData.id);
@@ -127,11 +112,7 @@ io.on('connection', function (socket) {
             session.turn = session.p1.id;
         }
         else {
-<<<<<<< HEAD
             sendError("Unauthorized Move Performed", socket);
-=======
-            sendError("Unauthorized Move Performed");
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
             return;
         }
         // we synchronize the grid data from the client
@@ -180,8 +161,6 @@ io.on('connection', function (socket) {
         console.log("Restarting Game Session#: " + session.id + " with " + session.p1.id + " and " + session.p2.id);
     });
 
-<<<<<<< HEAD
-=======
 
     // Logic to handle client disconnects
     socket.on('disconnect', function () {
@@ -189,46 +168,6 @@ io.on('connection', function (socket) {
         let disconnectedSocket;
         let session;
 
-        // get socket details
-        disconnectedSocket = socketObjForSocket(socket, true);
-
-        if(!disconnectedSocket){
-            return;
-        }
-        // finding out if they quit from an active session
-        removedClient = playerObjForID(disconnectedSocket.clientID, true);
-
-        // if a player is removed find his session details
-        if (removedClient) {
-            console.log("Player with Client# " + removedClient.id + " with IP: " + removedClient.ip + " Got disconnected ");
-            session = sessionObjForClientWithID(removedClient.id, true);
-        }
-
-        // If session details found we do the appropriate updates to the database
-        if (session) {
-            // we transfer the opponent to active database and send him updates
-            let client = playerObjForID(removedClient.id === session.p1.id ? session.p2.id: session.p1.id, true);
-            clients.push(client);
-            socketObjForClientWithID(client.id).socket.emit('end', { xscore: session.xscore, oscore: session.oscore });
-            updateClients();
-            return;
-        };
-
-        // we do 2 things here if a player not in a game quit we just remove him and update the other clients with new databse
-        // if an active player had quit then we just need to update the clients cause we did the processing above
-        removedClient = clientObjForID(disconnectedSocket.clientID, true);
-        console.log("Client# " + removedClient.id + " with IP: " + removedClient.ip + " disconnected from server");
-        updateClients();
-    });
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
-
-    // Logic to handle client disconnects
-    socket.on('disconnect', function () {
-        let removedClient;
-        let disconnectedSocket;
-        let session;
-
-<<<<<<< HEAD
         // get socket details
         disconnectedSocket = socketObjForSocket(socket, true);
 
@@ -262,53 +201,10 @@ io.on('connection', function (socket) {
     });
     socket.on('error', function (obj) {
         console.log("Socket Error"+obj);
-=======
-    function sendError(message) {
-        console.log("Sending error Message");
-       // socket.emit('error', { message: message });
-    }
-
-});
-
-function updateClients() {
-    clientBroadcast('update', { message: "Client list update from Game Server", clients: clients, players: players });
-}
-
-function clientBroadcast(trigger, obj) {
-    console.log("Client Broadcasting");
-    clients.forEach(client => {
-        socketObjForClientWithID(client.id).socket.emit(trigger, obj);
-    })
-}
-
-function clientObjForID(id, splice = false) {
-    let client;
-    clients.forEach(obj => {
-        if (obj.id === id) {
-            if (splice) {
-                client = clients.splice(clients.indexOf(obj), 1)[0];
-            }
-            client = obj;
-        }
-    });
-    return client;
-}
-
-function playerObjForID(id, splice = false) {
-    let player;
-    players.forEach(obj => {
-        if (obj.id === id) {
-            if (splice) {
-                player = players.splice(players.indexOf(obj), 1)[0];
-            }
-            player = obj;
-        }
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
     });
     return player;
 }
 
-<<<<<<< HEAD
 });
 
 function sendError(message, socketToUse) {
@@ -359,11 +255,6 @@ function sessionObjForID(id, splice = false) {
     let session;
     sessions.forEach(obj => {
         if (obj.id === id) {
-=======
-function sessionObjForID(id, splice = false) {
-    let session;
-    sessions.forEach(obj => {
-        if (obj.id === id) {
             if (splice) {
                 session = sessions.splice(sessions.indexOf(obj), 1)[0];
             }
@@ -377,7 +268,6 @@ function sessionObjForClientWithID(id, splice = false) {
     let session;
     sessions.forEach(obj => {
         if (obj.p1.id === id || obj.p2.id === id) {
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
             if (splice) {
                 session = sessions.splice(sessions.indexOf(obj), 1)[0];
             }
@@ -386,22 +276,6 @@ function sessionObjForClientWithID(id, splice = false) {
     });
     return session;
 }
-<<<<<<< HEAD
-
-function sessionObjForClientWithID(id, splice = false) {
-    let session;
-    sessions.forEach(obj => {
-        if (obj.p1.id === id || obj.p2.id === id) {
-            if (splice) {
-                session = sessions.splice(sessions.indexOf(obj), 1)[0];
-            }
-            session = obj;
-        }
-    });
-    return session;
-}
-=======
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
 
 
 function socketObjForClientWithID(id, splice = false) {
@@ -431,7 +305,6 @@ function socketObjForSocket(socket, splice = false) {
 }
 
 
-<<<<<<< HEAD
 
 function validateNAME(str) {
     if (str == undefined) {
@@ -467,58 +340,12 @@ function winCheck(data, empty) {
 
     else if (data[2] == data[5] && data[2] == data[8] && data[2] != empty) {
         return { pos: [2, 5, 8], winner: data[2] };
-=======
-
-function validateNAME(str) {
-    if(str == undefined){
-        return false;
-    }
-    str = str.trim();
-    var usernameRegex = /^[\wa-zA-Z]{3,12}$/;
-    if (str.match(usernameRegex)) {
-        return true;
-    }
-    return false;
-}
-
-function winCheck(data, empty) {
-    if (data[0] === data[1] && data[0] === data[2] && data[0] != empty) {
-        return { pos: [0, 1, 2], winner: data[0] };
-    }
-
-    else if (data[3] === data[4] && data[3] === data[5] && data[3] != empty) {
-        return { pos: [3, 4, 5], winner: data[3] };
-    }
-
-    else if (data[6] === data[7] && data[6] === data[8] && data[6] != empty) {
-        return { pos: [6, 7, 8], winner: data[6] };
-    }
-    else if (data[0] === data[3] && data[0] === data[6] && data[0] != empty) {
-        return { pos: [0, 3, 6], winner: data[0] };
-    }
-
-    else if (data[1] === data[4] && data[1] === data[7] && data[1] != empty) {
-        return { pos: [1, 4, 7], winner: data[1] };
-    }
-
-    else if (data[2] == data[5] && data[2] == data[8] && data[2] != empty) {
-        return { pos: [2, 5, 8], winner: data[2] };
     }
 
     else if (data[0] == data[4] && data[0] == data[8] && data[0] != empty) {
         return { pos: [0, 4, 8], winner: data[0] };
     }
 
-    else if (data[2] == data[4] && data[2] == data[6] && data[2] != empty) {
-        return { pos: [2, 4, 6], winner: data[2] };
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa
-    }
-
-    else if (data[0] == data[4] && data[0] == data[8] && data[0] != empty) {
-        return { pos: [0, 4, 8], winner: data[0] };
-    }
-
-<<<<<<< HEAD
     else if (data[2] == data[4] && data[2] == data[6] && data[2] != empty) {
         return { pos: [2, 4, 6], winner: data[2] };
     }
@@ -531,12 +358,3 @@ function winCheck(data, empty) {
     }
     return { winner: -2, pos: null }
 }
-=======
-    for (let i = 0; i < data.length; i++) {
-        if (data[i] === empty) {
-            return { winner: -1, pos: null };
-        }
-    }
-    return { winner: -2, pos: null }
-}
->>>>>>> 4943120519c87173d68e7cb34b3756665e80dbaa

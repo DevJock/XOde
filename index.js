@@ -45,7 +45,7 @@ io.on('connection', function (socket) {
     socket.on('connectToServer', function (obj) {
         // username validation
         if (!validateNAME(obj.name)) {
-            sendError("Username is Invalid. Try again.")
+            sendError("Username is Invalid. Try again. No spaces and special characters Allowed.")
             return;
         }
         let client = { id: clientCount++, ip: clientIp, name: obj.name };

@@ -4,15 +4,16 @@
     This is one of the partial HTML based template file which helps with the angular MVC framework
 -->
 <form novalidate autocomplete="off" style="width: 75%; height: auto; margin:auto; padding: 2%;">
-    <h1>Welcome<span id="player">,</span></h1><br />
-    <h3>XOde is a nodeJS based TicTacToe Game.</h3>
-    <h4>Just sign in with an alias or a username to help others discover you on the network. </h4>
-    <label for="inputlg">
-        <h2>Enter a Name that's atleast 3 characters long in the Text Box Below</h3>
-    </label>
-
+    <div class="typograph">
+        <h1>Welcome<span id="player">,</span></h1><br />
+        <h3>XOde is a nodeJS based TicTacToe Game.</h3>
+        <h4>Just sign in with an alias or a username to help others discover you on the network. </h4>
+        <label for="inputlg">
+            <h2>Enter a Name that's atleast 3 characters long in the Text Box Below</h3>
+        </label>
+    </div>
     <input class="form-control input-lg" type="text" ng-model="name" required autofocus placeholder="Name, Alias, GamerTag... :)"
         style="height:75px;font-size: 28px; text-align: center" onKeyUp="onNameChange()" id="nameField"><br />
 
-    <button ng-click="nameUpdate()" class="btn btn-primary" >Submit form</button>
+    <button ng-click="nameUpdate()" class="btn btn-primary">Submit form</button>
 </form>

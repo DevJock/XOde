@@ -34,21 +34,19 @@
 </head>
 
 <body>
-
-	<div style="background-color:rgb(41,41,41); vertical-align: middle;">
+	<div style="background-color:rgb(41,41,41); vertical-align: middle; height: 50px;">
 		<h1 class="text-center">XOde</h1>
 	</div>
 
-	<div class="container-fluid" style="margin:auto; height: auto; width:100%;">
+	<div class="container-fluid">
 		<div id="view" ng-app="XOde" ng-controller="XOdeSessionController">
 			<div class="content">
-				<div ui-view ng-class="transition" class="text-center" style="margin:auto">
+				<div ui-view class="text-center">
 					XOde | Server Based Tic Tac Toe
 				</div>
 			</div>
 		</div>
 	</div>
-
 </body>
 
 </html>

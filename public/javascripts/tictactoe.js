@@ -34,7 +34,7 @@ let aspectRatio;
 let setupDone;
 
 function SETUPGAME() {
-	gameCanvas = createCanvas(1,1);
+	gameCanvas = createCanvas();
 	windowResized();
 	gameCanvas.parent(canvasHolder);
 	rescale();
@@ -47,8 +47,11 @@ function SETUPGAME() {
 }
 
 function windowResized() {
-	let w = document.getElementById("canvasHolder").offsetWidth;
-	let h = document.getElementById("canvasHolder").offsetWidth;
+	if(!document.getElementById("canvasHolder")){
+		return;
+	}
+	let w = document.getElementById("canvasHolder").offsetWidth/1.2;
+	let h = document.getElementById("canvasHolder").offsetWidth/1.2;
 	resizeCanvas(w, h);
 	rescale();
 }
